@@ -27,16 +27,21 @@ except ImportError:
     import __builtin__ as builtins
 
 try:
+    from inspect import _is_coroutine_marker
+except ImportError:
+    _is_coroutine_marker = True
+
+try:
     import asyncio
 except ImportError:
     asyncio = None
-    _is_coroutine_marker = None
+    _is_coroutine = None
 else:
     if sys.version_info >= (3, 5, 3):
         import asyncio.coroutines
-        _is_coroutine_marker = asyncio.coroutines._is_coroutine
+        _is_coroutine = asyncio.coroutines._is_coroutine
     else:
-        _is_coroutine_marker = True
+        _is_coroutine = True
 
 try:
     import ConfigParser as iniconfigparser
@@ -1434,7 +1439,8 @@ cdef class Coroutine(Callable):
         some_coroutine.add_kwargs(keyword_argument1=3, keyword_argument=4)
     """
 
-    _is_coroutine = _is_coroutine_marker
+    _is_coroutine_marker = _is_coroutine_marker  # Python >=3.12
+    _is_coroutine = _is_coroutine  # Python <3.16
 
     def set_provides(self, provides):
         """Set provider provides."""
