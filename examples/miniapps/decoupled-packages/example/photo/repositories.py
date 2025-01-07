@@ -1,7 +1,10 @@
 """Photo repositories module."""
 
 
-class PhotoRepository:
+from ..abstraction.photo.repositories import PhotoRepositoryMeta
+
+
+class PhotoRepository(PhotoRepositoryMeta):
 
     def __init__(self, entity_factory, fs, db):
         self.entity_factory = entity_factory

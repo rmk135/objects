@@ -2,21 +2,22 @@
 
 from dependency_injector.wiring import Provide, inject
 
-from .user.repositories import UserRepository
-from .photo.repositories import PhotoRepository
-from .analytics.services import AggregationService
+from .abstraction.user.repositories import UserRepositoryMeta
+from .abstraction.photo.repositories import PhotoRepositoryMeta
+from .abstraction.analytics.services import AggregationServiceMeta
+
 from .containers import ApplicationContainer
 
 
 @inject
 def main(
-        user_repository: UserRepository = Provide[
+        user_repository: UserRepositoryMeta = Provide[
             ApplicationContainer.user_package.user_repository
         ],
-        photo_repository: PhotoRepository = Provide[
+        photo_repository: PhotoRepositoryMeta = Provide[
             ApplicationContainer.photo_package.photo_repository
         ],
-        aggregation_service: AggregationService = Provide[
+        aggregation_service: AggregationServiceMeta = Provide[
             ApplicationContainer.analytics_package.aggregation_service
         ],
 ) -> None:
@@ -31,6 +32,8 @@ def main(
     assert aggregation_service.user_repository is user_repository
     assert aggregation_service.photo_repository is photo_repository
     print("Aggregate analytics from user and photo packages")
+
+    aggregation_service.call_user_photo()
 
 
 if __name__ == "__main__":

@@ -1,7 +1,9 @@
 """User repositories module."""
 
+from ..abstraction.user.repositories import UserRepositoryMeta
 
-class UserRepository:
+
+class UserRepository(UserRepositoryMeta):
 
     def __init__(self, entity_factory, db):
         self.entity_factory = entity_factory

@@ -55,6 +55,17 @@ file.
 
    ./
    ├── example/
+   │   ├── abstraction
+   │   │   ├── __init__.py
+   │   │   ├── analytics
+   │   │   │   ├── __init__.py
+   │   │   │   └── services.py
+   │   │   ├── photo
+   │   │   │   ├── __init__.py
+   │   │   │   └── repositories.py
+   │   │   └── user
+   │   │       ├── __init__.py
+   │   │       └── repositories.py
    │   ├── analytics/
    │   │   ├── __init__.py
    │   │   ├── containers.py
@@ -74,6 +85,26 @@ file.
    │   └── containers.py
    ├── config.ini
    └── requirements.txt
+
+
+Abstraction
+------------------
+
+Listing of the ``example/abstraction/user/repositories.py``:
+
+.. literalinclude:: ../../examples/miniapps/decoupled-packages/example/abstraction/user/repositories.py
+   :language: python
+
+Listing of the ``example/abstraction/photo/repositories.py``:
+
+.. literalinclude:: ../../examples/miniapps/decoupled-packages/example/abstraction/photo/repositories.py
+   :language: python
+
+Listing of the ``example/abstraction/analytics/services.py``:
+
+.. literalinclude:: ../../examples/miniapps/decoupled-packages/example/abstraction/analytics/services.py
+   :language: python
+
 
 Package containers
 ------------------

@@ -1,0 +1,1 @@
+"""abstraction photo package."""
