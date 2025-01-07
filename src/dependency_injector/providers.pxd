@@ -500,6 +500,8 @@ cdef inline void __async_prepare_args_kwargs_callback(
         for value, (key, _) in zip(result, future_args_kwargs):
             args[key] = value
     except Exception as exception:
+        exception.__traceback__.tb_frame.f_locals.clear()
+        exception.__traceback__.tb_frame.f_locals.update(locals())
         future_result.set_exception(exception)
     else:
         future_result.set_result(args)
@@ -548,6 +550,8 @@ cdef inline void __async_inject_attributes_callback(object future_result, object
         for name, value in attributes.items():
             setattr(instance, name, value)
     except Exception as exception:
+        exception.__traceback__.tb_frame.f_locals.clear()
+        exception.__traceback__.tb_frame.f_locals.update(locals())
         future_result.set_exception(exception)
     else:
         future_result.set_result(instance)
@@ -604,15 +608,20 @@ cdef inline object __call(
         asyncio.ensure_future(args_kwargs_ready)
 
         return future_result
-
-    return call(*args, **kwargs)
-
+    try:
+        return call(*args, **kwargs)
+    except Exception as exception:
+        exception.__traceback__.tb_frame.f_locals.clear()
+        exception.__traceback__.tb_frame.f_locals.update(locals())
+        raise exception
 
 cdef inline void __async_call_callback(object future_result, object call, object future):
     try:
         args, kwargs = future.result()
         result = call(*args, **kwargs)
     except Exception as exception:
+        exception.__traceback__.tb_frame.f_locals.clear()
+        exception.__traceback__.tb_frame.f_locals.update(locals())
         future_result.set_exception(exception)
     else:
         if __is_future_or_coroutine(result):
@@ -626,6 +635,8 @@ cdef inline object __async_result_callback(object future_result, object future):
     try:
         result = future.result()
     except Exception as exception:
+        exception.__traceback__.tb_frame.f_locals.clear()
+        exception.__traceback__.tb_frame.f_locals.update(locals())
         future_result.set_exception(exception)
     else:
         future_result.set_result(result)
