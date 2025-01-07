@@ -5084,7 +5084,7 @@ def _resolve_calling_module():
 
 def _resolve_calling_package_name():
     module = _resolve_calling_module()
-    return module.__package__
+    return getattr(module, "__package__", None)
 
 
 cpdef _copy_parent(object from_, object to, dict memo):
