@@ -1,4 +1,5 @@
 """Coroutine provider tests."""
+import sys
 
 from dependency_injector import providers, errors
 from pytest import mark, raises
@@ -208,3 +209,17 @@ def test_repr():
         "<dependency_injector.providers."
         "Coroutine({0}) at {1}>".format(repr(example), hex(id(provider)))
     )
+
+
+@mark.skipif(sys.version_info > (3, 15), reason="requires Python<3.16")
+def test_asyncio_iscoroutinefunction() -> None:
+    from asyncio.coroutines import iscoroutinefunction
+
+    assert iscoroutinefunction(providers.Coroutine(example))
+
+
+@mark.skipif(sys.version_info < (3, 12), reason="requires Python>=3.12")
+def test_inspect_iscoroutinefunction() -> None:
+    from inspect import iscoroutinefunction
+
+    assert iscoroutinefunction(providers.Coroutine(example))
