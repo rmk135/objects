@@ -33,9 +33,12 @@ def subcontainer():
     container.unwire()
 
 
-@fixture
-def resourceclosing_container():
-    container = resourceclosing.Container()
+@fixture(params=[
+    resourceclosing.Container,
+    resourceclosing.ContainerSingleton,
+])
+def resourceclosing_container(request):
+    container = request.param()
     container.wire(modules=[resourceclosing])
     yield container
     container.unwire()
@@ -302,6 +305,36 @@ def test_closing_dependency_resource():
     assert isinstance(result_2, resourceclosing.FactoryService)
     assert result_2.service.init_counter == 2
     assert result_2.service.shutdown_counter == 2
+
+
+@mark.usefixtures("resourceclosing_container")
+def test_closing_dependency_resource_kwargs():
+    resourceclosing.Service.reset_counter()
+
+    result_1 = resourceclosing.test_function_dependency_kwargs()
+    assert isinstance(result_1, resourceclosing.FactoryService)
+    assert result_1.service.init_counter == 1
+    assert result_1.service.shutdown_counter == 1
+
+    result_2 = resourceclosing.test_function_dependency_kwargs()
+    assert isinstance(result_2, resourceclosing.FactoryService)
+    assert result_2.service.init_counter == 2
+    assert result_2.service.shutdown_counter == 2
+
+
+@mark.usefixtures("resourceclosing_container")
+def test_closing_nested_dependency_resource():
+    resourceclosing.Service.reset_counter()
+
+    result_1 = resourceclosing.test_function_nested_dependency()
+    assert isinstance(result_1, resourceclosing.NestedService)
+    assert result_1.factory_service.service.init_counter == 1
+    assert result_1.factory_service.service.shutdown_counter == 1
+
+    result_2 = resourceclosing.test_function_nested_dependency()
+    assert isinstance(result_2, resourceclosing.NestedService)
+    assert result_2.factory_service.service.init_counter == 2
+    assert result_2.factory_service.service.shutdown_counter == 2
 
     assert result_1 is not result_2
 
