@@ -18,5 +18,6 @@ numpy
 scipy
 boto3
 mypy_boto3_s3
+typing_extensions
 
 -r requirements-ext.txt

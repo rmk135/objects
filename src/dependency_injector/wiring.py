@@ -37,6 +37,21 @@ if sys.version_info >= (3, 9):
 else:
     GenericAlias = None
 
+if sys.version_info >= (3, 9):
+    from typing import Annotated, get_args, get_origin
+else:
+    try:
+        from typing_extensions import Annotated, get_args, get_origin
+    except ImportError:
+        Annotated = object()
+
+        # For preventing NameError. Never executes
+        def get_args(hint):
+            return ()
+
+        def get_origin(tp):
+            return None
+
 
 try:
     import fastapi.params
@@ -572,6 +587,24 @@ def _unpatch_attribute(patched: PatchedAttribute) -> None:
     setattr(patched.member, patched.name, patched.marker)
 
 
+def _extract_marker(parameter: inspect.Parameter) -> Optional["_Marker"]:
+    if get_origin(parameter.annotation) is Annotated:
+        marker = get_args(parameter.annotation)[1]
+    else:
+        marker = parameter.default
+
+    if not isinstance(marker, _Marker) and not _is_fastapi_depends(marker):
+        return None
+
+    if _is_fastapi_depends(marker):
+        marker = marker.dependency
+
+        if not isinstance(marker, _Marker):
+            return None
+
+    return marker
+
+
 def _fetch_reference_injections(  # noqa: C901
     fn: Callable[..., Any],
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -596,18 +629,10 @@ def _fetch_reference_injections(  # noqa: C901
     injections = {}
     closing = {}
     for parameter_name, parameter in signature.parameters.items():
-        if not isinstance(parameter.default, _Marker) and not _is_fastapi_depends(
-            parameter.default
-        ):
+        marker = _extract_marker(parameter)
+
+        if marker is None:
             continue
-
-        marker = parameter.default
-
-        if _is_fastapi_depends(marker):
-            marker = marker.dependency
-
-            if not isinstance(marker, _Marker):
-                continue
 
         if isinstance(marker, Closing):
             marker = marker.provider
